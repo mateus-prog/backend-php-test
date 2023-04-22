@@ -1,47 +1,49 @@
 version: "3.7"
-
 services:
+    app:
+        build:
+            args:
+                user: mateus
+                uid: 1000
+            context: ./
+            dockerfile: Dockerfile
+        image: homologacao
+        container_name: ${APP_NAME}-app
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www
+        networks:
+            - homologacao
+    db:
+        image: mysql:8.0
+        container_name: ${APP_NAME}-db
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+            MYSQL_ROOT_HOST: "%"
+        ports:
+            - "${DB_EXTERNAL_PORT}:3306"
+        networks:
+            - homologacao
 
-  app-api:
-    container_name: app-test-api
-    tty: true
-    image: webdevops/php-nginx:8.2
-    environment:
-      - APP_NAME=Laravel Teste
-      - APP_URL=http://localhost
-      - DB_CONNECTION=mysql
-      - DB_HOST=app-db
-      - DB_PORT=3306
-      - DB_DATABASE=laravel-app-api
-      - DB_USERNAME=application
-      - DB_PASSWORD=application
-      - WEB_DOCUMENT_ROOT=/app/public
-      - APP_ENV=local
-      - APP_DEBUG=true
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./:/app
-    restart: on-failure
-    networks:
-      - homologacao
-
-  app-db:
-    container_name: app-test-db
-    image: mysql:8
-    environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=laravel-app-api
-      - MYSQL_USER=application
-      - MYSQL_PASSWORD=application
-    ports:
-      - 3306:3306
-    restart: on-failure
-    networks:
-      - homologacao
-
+    nginx:
+        image: nginx:1.17-alpine
+        container_name: ${APP_NAME}-nginx
+        restart: unless-stopped
+        ports:
+            - 8000:80
+        volumes:
+            - ./:/var/www
+            - ./docker-compose/nginx:/etc/nginx/conf.d
+        networks:
+            - homologacao
 networks:
-  homologacao:
-    name: homologacao
-    driver: bridge
+    homologacao:
+        name: homologacao
+        driver: bridge
