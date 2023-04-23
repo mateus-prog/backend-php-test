@@ -13,6 +13,7 @@ Este é um projeto teste para Rede Ancora onde foi feito uma API Restfull, e nes
     - `docker-compose exec app composer install`\
     - `docker-compose exec app php artisan migrate`\
     - `docker-compose exec app php artisan db:seed`\
+    - `docker-compose exec app php artisan test`\
     - Then Access: http://localhost:8000/
 
 **3 Passo - Teste no Postman**\
